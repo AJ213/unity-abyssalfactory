@@ -56,7 +56,8 @@ public class ChunkMeshGenerationSystem
                         {
                             continue;
                         }
-                        FaceMeshData faceMeshData = neighbor.VoxelMeshData.faces[p];
+                        Voxel voxel = database.GetVoxel(voxelID);
+                        FaceMeshData faceMeshData = voxel.VoxelMeshData.faces[p];
                         VertData[] vertData = faceMeshData.vertData;
                         int[] triangleData = faceMeshData.triangles;
                         for (int i = 0; i < vertData.Length; i++)
