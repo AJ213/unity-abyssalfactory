@@ -19,7 +19,7 @@ public class Program
             {
                 for (int x = 0; x < Chunk.SIZE; x++)
                 {
-                    chunk.SetID(x, y, z, 1);
+                    chunk.SetID(x, y, z, UnityEngine.Random.Range(0,3));
                 }
             }
         }
@@ -30,6 +30,7 @@ public class Program
         renderer = hook.AddComponent<MeshRenderer>();
         filter.mesh = ChunkMeshGenerationSystem.CreateMesh(chunkMesh);
         renderer.material = database.VoxelMaterial;
+        renderer.sharedMaterial.SetTexture("_MainTex", this.database.GetTextureArray);
     }
 
 

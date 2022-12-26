@@ -4,7 +4,7 @@ using Unity.Mathematics;
 
 public class Chunk
 {
-    public const int SIZE = 32;
+    public const int SIZE = 8;
     public const int SIZEM1 = SIZE-1;
     public const int SIZE_2D = SIZE * SIZE;
     public const int SIZE_3D = SIZE_2D * SIZE;

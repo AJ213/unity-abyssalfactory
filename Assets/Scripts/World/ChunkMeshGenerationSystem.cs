@@ -21,8 +21,15 @@ public class ChunkMeshGenerationSystem
                     int voxelID = chunk.GetID(x, y, z);
                     int3 localPosition = new int3(x, y, z);
   
-                    for (int p = 0; p < 6; p++) // cus 6 directions lmao
+                    for (int p = 0; p < VoxelNormals.Length; p++) // cus 6 directions lmao
                     {
+                        Voxel voxel = database.GetVoxel(voxelID);
+                        Texture2D texture = voxel.GetTexture((World.Direction)p);
+                        if (texture == null)
+                        {
+                            continue;
+                        }
+
                         int3 localNeighborPosition = localPosition + VoxelNormals[p];
                         int neighborID;
                         bool neighborNull = chunk.neighbors[p] == null;
@@ -51,22 +58,23 @@ public class ChunkMeshGenerationSystem
                         } else
                             neighborID = chunk.GetID(localNeighborPosition.x, localNeighborPosition.y, localNeighborPosition.z);  
 
-                        Voxel neighbor = database.GetVoxel(neighborID);
-                        if (!neighbor.CanRenderFaces)
+                        if (!database.GetVoxel(neighborID).CanRenderFaces)
                         {
                             continue;
                         }
-                        Voxel voxel = database.GetVoxel(voxelID);
+                        
                         FaceMeshData faceMeshData = voxel.VoxelMeshData.faces[p];
                         VertData[] vertData = faceMeshData.vertData;
-                        int[] triangleData = faceMeshData.triangles;
                         for (int i = 0; i < vertData.Length; i++)
                         {
                             outputMesh.vertices.Enqueue(localPosition +
                             (float3)vertData[i].position);
                             outputMesh.normals.Enqueue((float3)faceMeshData.normal);
-                            outputMesh.uvs.Enqueue(vertData[i].uv);
+
+                            int textureID = database.GetTextureID(texture);
+                            outputMesh.uvs.Enqueue(new Vector3(vertData[i].uv.x, vertData[i].uv.y, textureID));
                         }
+                        int[] triangleData = faceMeshData.triangles;
                         for (int i = 0; i < triangleData.Length; i++)
                         {
                             outputMesh.triangles.Enqueue(vertIndex + triangleData[i]);
@@ -80,14 +88,12 @@ public class ChunkMeshGenerationSystem
 
     public static Mesh CreateMesh(ChunkMesh chunkMesh)
     {
-        Mesh mesh = new Mesh
-        {
-            vertices = chunkMesh.vertices.ToArray(),
-            triangles = chunkMesh.triangles.ToArray(),
-            normals = chunkMesh.normals.ToArray(),
-            uv = chunkMesh.uvs.ToArray()
-        };
-
+        Mesh mesh = new Mesh();
+        mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        mesh.vertices = chunkMesh.vertices.ToArray();
+        mesh.triangles = chunkMesh.triangles.ToArray();
+        mesh.normals = chunkMesh.normals.ToArray();
+        mesh.SetUVs(0,chunkMesh.uvs.ToArray());
         return mesh;
     }
 

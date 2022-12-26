@@ -13,7 +13,11 @@ public class Voxel : ScriptableObject
 
     public int ID => id;
     public VoxelMeshData VoxelMeshData => voxelMeshData;
-    public Texture2D GetTexture(World.Direction direction) => textureFaces[(int)direction];
+    public Texture2D GetTexture(World.Direction direction) { 
+        if (textureFaces == null || (int)direction >= textureFaces.Length) return null;
+
+        return textureFaces[(int)direction]; 
+    }
     public bool IsSolid => isSolid;
     public bool IsDestructable => isDestructable;
     public bool CanRenderFaces => canRenderFaces;
