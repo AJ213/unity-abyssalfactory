@@ -9,6 +9,8 @@ public class Program
     MeshFilter filter;
     MeshRenderer renderer;
     public Database database;
+    public static World CurrentWorld;
+
     public Program(FileSystemData database, GameObject hook)
     {
         this.database = new Database(database);

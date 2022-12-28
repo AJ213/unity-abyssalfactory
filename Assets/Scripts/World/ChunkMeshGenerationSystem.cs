@@ -21,7 +21,7 @@ public class ChunkMeshGenerationSystem
                     int voxelID = chunk.GetID(x, y, z);
                     int3 localPosition = new int3(x, y, z);
   
-                    for (int p = 0; p < VoxelNormals.Length; p++) // cus 6 directions lmao
+                    for (int p = 0; p < World.VoxelDirections.Length; p++)
                     {
                         Voxel voxel = database.GetVoxel(voxelID);
                         Texture2D texture = voxel.GetTexture((World.Direction)p);
@@ -30,7 +30,7 @@ public class ChunkMeshGenerationSystem
                             continue;
                         }
 
-                        int3 localNeighborPosition = localPosition + VoxelNormals[p];
+                        int3 localNeighborPosition = localPosition + World.GetDirectionVector(p);
                         int neighborID;
                         bool neighborNull = chunk.neighbors[p] == null;
                         bool gX0 = localNeighborPosition.x > -1;
@@ -97,12 +97,5 @@ public class ChunkMeshGenerationSystem
         return mesh;
     }
 
-    public static readonly int3[] VoxelNormals = new int3[] {
-        new int3(0,0,1),    // forward
-        new int3(0,0,-1),   // backward
-        new int3(0,1,0),    // up
-        new int3(0,-1,0),   // down
-        new int3(1,0,0),    // right
-        new int3(-1,0,0),   // left
-    };
+    
 }
