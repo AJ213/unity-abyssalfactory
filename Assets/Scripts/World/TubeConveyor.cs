@@ -3,6 +3,7 @@ using Unity.Mathematics;
 
 public class TubeConveyor : IBlockEntity, IInventory
 {
+    public int ID { get; set; }
     public World.Direction direction;
     public int3 placePosition;
     public Item[] itemsOnConveyor;
@@ -14,8 +15,9 @@ public class TubeConveyor : IBlockEntity, IInventory
     float currentTimer = 0;
     private int3 outputPosition;
 
-    public bool OnCreate(int3 position, World.Direction direction)
+    public bool OnCreate(int ID, int3 position, World.Direction direction)
     {
+        this.ID = ID;
         this.placePosition = position;
         this.direction = direction;
 
@@ -110,7 +112,8 @@ public class Item {
 }
 
 public interface IBlockEntity {
-    public bool OnCreate(int3 position, World.Direction direction);
+    public int ID { get; set; }
+    public bool OnCreate(int ID, int3 position, World.Direction direction);
     public void Update(float fixedDeltaTime);
     public void Render(float timeDelta);
 }

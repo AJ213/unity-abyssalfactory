@@ -1,19 +1,23 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
 public class Database
 {
-    Dictionary<int, Voxel> voxelMeshDataMap;
+    Voxel[] voxels;
     Dictionary<int, List<Texture2D>> uniqueTextures;
     Dictionary<Texture2D, int> textureIndexes;
+    Dictionary<int, Type> blockEntityTypes;
     Texture2DArray textureArray;
+    FileSystemData fileSystemData;
     public Database(FileSystemData fileSystemData)
     {
-        voxelMeshDataMap = new Dictionary<int, Voxel>();
+        this.fileSystemData = fileSystemData;
+        voxels = new Voxel[fileSystemData.Voxels.Count];
         foreach (Voxel voxel in fileSystemData.Voxels)
         {
-            voxelMeshDataMap.Add(voxel.ID, voxel);
+            voxels[voxel.ID] = voxel;
         }
 
         ////////////////////////////// Create Texture Array //
@@ -25,12 +29,15 @@ public class Database
         {
             temp.Clear();
             uniqueTextures.Add(voxel.ID, new List<Texture2D>());
-            for (int i = 0; i < 6; i++){ // too damn lazy to do enum counting for all directions
+            for (int i = 0; i < 6; i++)
+            { // too damn lazy to do enum counting for all directions
                 Texture2D cur = voxel.GetTexture((World.Direction)i);
-                if(cur == null){
+                if (cur == null)
+                {
                     continue;
                 }
-                if(!temp.Contains(cur)){
+                if (!temp.Contains(cur))
+                {
                     uniqueTextures[voxel.ID].Add(cur);
                     temp.Add(cur);
                     texCount++;
@@ -47,18 +54,31 @@ public class Database
         textureArray.wrapMode = TextureWrapMode.Repeat;
         int count = 0;
         textureIndexes = new Dictionary<Texture2D, int>();
-        for (int i = 0; i < fileSystemData.Voxels.Count; i++){
+        for (int i = 0; i < fileSystemData.Voxels.Count; i++)
+        {
             List<Texture2D> texs = uniqueTextures[i];
-            for(int j = 0; j < texs.Count; j++){
+            for (int j = 0; j < texs.Count; j++)
+            {
                 textureIndexes[texs[j]] = count;
                 textureArray.SetPixels(texs[j].GetPixels(0), count, 0);
                 count++;
             }
         }
         textureArray.Apply();
-    }
 
+        ////////////////////////////// Create Entity Type Dictionary //
+        blockEntityTypes = new Dictionary<int, Type>();
+        foreach (Voxel voxel in voxels)
+        {
+            if (voxel.IsEntity)
+            {
+                blockEntityTypes.Add(voxel.ID, Type.GetType(voxel.BlockEntityClassName));
+            }
+        }
+    }
     public int GetTextureID(Texture2D tex) => textureIndexes[tex];
+    public Type GetBlockEntityType(int id) => blockEntityTypes[id];
     public Texture2DArray GetTextureArray => textureArray;
-    public Voxel GetVoxel(int id) => voxelMeshDataMap[id];
+    public Voxel GetVoxel(int id) => voxels[id];
+    public Material VoxelMaterial => fileSystemData.VoxelMaterial;
 }

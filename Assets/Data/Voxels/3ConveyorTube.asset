@@ -10,18 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f9656333c988514f9b8b53ae7cb02c6, type: 3}
-  m_Name: 0Air
+  m_Name: 3ConveyorTube
   m_EditorClassIdentifier: 
-  id: 0
-  displayName: Air
-  isSolid: 0
-  isDestructable: 0
+  id: 3
+  displayName: TubeConveyor
+  isSolid: 1
+  isDestructable: 1
   canRenderFaces: 1
-  voxelMeshData: {fileID: 11400000, guid: 260a423ea8d1b9143ae50e19a0a689bb, type: 2}
+  voxelMeshData: {fileID: 0}
   textureFaces: []
-  isBlockEntity: 0
-  entityMesh: {fileID: 0}
-  entityMaterial: {fileID: 0}
+  isBlockEntity: 1
+  entityMesh: {fileID: -309684176625119091, guid: e4e1416ed302f3a47b0646e3cdb6dd3a, type: 3}
+  entityMaterial: {fileID: 2100000, guid: 4870f4ae57cf9d649a4ef2cc110345ce, type: 2}
+  blockEntityClassName: TubeConveyor
   size:
     x: 1
     y: 1

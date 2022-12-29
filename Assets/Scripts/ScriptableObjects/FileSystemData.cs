@@ -9,7 +9,7 @@ public class FileSystemData : ScriptableObject
 {
     public HashSet<Voxel> Voxels = new HashSet<Voxel>();
     [SerializeField] private string voxelDataRelativeFilePath;
-    [SerializeField] private Material voxelMaterial;
+    [SerializeField] public Material voxelMaterial;
     void OnValidate()
     {
         if (!Application.IsPlaying(this))

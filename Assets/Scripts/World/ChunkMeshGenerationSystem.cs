@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ChunkMeshGenerationSystem 
 {
-    public static void GenerateMesh([NotNull] Chunk chunk, [NotNull] ChunkMesh outputMesh, Database database)
+    public static void GenerateMesh([NotNull] Chunk chunk, [NotNull] ChunkMesh outputMesh)
     {
         if(chunk == null)
         {
@@ -23,7 +23,7 @@ public class ChunkMeshGenerationSystem
   
                     for (int p = 0; p < World.VoxelDirections.Length; p++)
                     {
-                        Voxel voxel = database.GetVoxel(voxelID);
+                        Voxel voxel = Program.GlobalDatabase.GetVoxel(voxelID);
                         Texture2D texture = voxel.GetTexture((World.Direction)p);
                         if (texture == null)
                         {
@@ -58,7 +58,7 @@ public class ChunkMeshGenerationSystem
                         } else
                             neighborID = chunk.GetID(localNeighborPosition.x, localNeighborPosition.y, localNeighborPosition.z);  
 
-                        if (!database.GetVoxel(neighborID).CanRenderFaces)
+                        if (!Program.GlobalDatabase.GetVoxel(neighborID).CanRenderFaces)
                         {
                             continue;
                         }
@@ -71,7 +71,7 @@ public class ChunkMeshGenerationSystem
                             (float3)vertData[i].position);
                             outputMesh.normals.Enqueue((float3)faceMeshData.normal);
 
-                            int textureID = database.GetTextureID(texture);
+                            int textureID = Program.GlobalDatabase.GetTextureID(texture);
                             outputMesh.uvs.Enqueue(new Vector3(vertData[i].uv.x, vertData[i].uv.y, textureID));
                         }
                         int[] triangleData = faceMeshData.triangles;

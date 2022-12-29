@@ -4,13 +4,17 @@ public class UnityHook : MonoBehaviour
 {
     public FileSystemData Database;
     Program program;
-    void Start()
+    [SerializeField] Mesh mesh;
+    [SerializeField] Material material;
+
+
+    void Awake()
     {
         program = new Program(Database, this.gameObject);
     }
     
     void Update()
     {
-        program.Update();
+        program.Update(mesh, material);
     }
 }

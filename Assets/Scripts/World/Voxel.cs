@@ -1,3 +1,4 @@
+using Unity.Mathematics;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Voxel", menuName = "Data/Voxel")]
@@ -11,6 +12,12 @@ public class Voxel : ScriptableObject
     [SerializeField] VoxelMeshData voxelMeshData;
     [SerializeField] Texture2D[] textureFaces;
 
+    [SerializeField] bool isBlockEntity = false;
+    [SerializeField] Mesh entityMesh;
+    [SerializeField] Material entityMaterial;
+    [SerializeField] string blockEntityClassName;
+    [SerializeField] int3 size = new int3(1,1,1);
+
     public int ID => id;
     public VoxelMeshData VoxelMeshData => voxelMeshData;
     public Texture2D GetTexture(World.Direction direction) { 
@@ -21,7 +28,12 @@ public class Voxel : ScriptableObject
     public bool IsSolid => isSolid;
     public bool IsDestructable => isDestructable;
     public bool CanRenderFaces => canRenderFaces;
-    
+    public bool IsEntity => isBlockEntity;
+    public Mesh EntityMesh => entityMesh;
+    public Material EntityMaterial => entityMaterial;
+    public string BlockEntityClassName => blockEntityClassName;
+    public int3 Size => size;
+   
 
     public override bool Equals(object obj)
     {
