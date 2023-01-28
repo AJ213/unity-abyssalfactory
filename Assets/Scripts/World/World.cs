@@ -38,9 +38,25 @@ public class World
         return chunk.GetBlockEntity(globalPosition);
     }
 
+    // This needs to check many chunks for this lol, not just one
+    // this also needs to be able to request to make new chunks
+    public bool IsRegionEmpty(EntityRegion region){
+        int3 coord = GetChunkCoordFromPosition(region.Corner);
+        chunks.TryGetValue(coord, out Chunk chunk);
+        if (chunk == null) return false;
+        if (region.IsSingleSize) return chunk.IsSpaceEmpty(region.Corner);
+
+        return chunk.IsRegionEmpty(region);
+    }
+
     public T GetEntity<T>(int3 position){
         
         return default(T);
+    }
+
+    public void OnDisable()
+    {
+        blockEntityRenderer.OnDisable();
     }
 
     #region Lookup Tables
@@ -60,6 +76,14 @@ public class World
         new int3(0,-1,0),   // down
         new int3(1,0,0),    // right
         new int3(-1,0,0),   // left
+    };
+    public static readonly Quaternion[] VoxelRotations = new Quaternion[] {
+        Quaternion.LookRotation(Vector3.forward, Vector3.up),
+        Quaternion.LookRotation(Vector3.back, Vector3.up),
+        Quaternion.LookRotation(Vector3.up, Vector3.up),
+        Quaternion.LookRotation(Vector3.down, Vector3.up),
+        Quaternion.LookRotation(Vector3.right, Vector3.up),
+        Quaternion.LookRotation(Vector3.left, Vector3.up)
     };
 
     public static int3 GetDirectionVector(Direction dir) => VoxelDirections[(int)dir];
@@ -105,10 +129,18 @@ public class World
 public class ChunkRenderer {
     
     Dictionary<Chunk, Mesh> chunks = new Dictionary<Chunk, Mesh> ();
+    BlockEntityRenderer blockEntityRenderer;
     public void AddChunk(Chunk chunk, BlockEntityRenderer blockEntityRenderer){
         chunks.Add(chunk, null);
-        foreach(var keypair in chunk.blockEntities){
-            Matrix4x4 mat = Matrix4x4.TRS((float3)keypair.Key + new float3(0.5f), Quaternion.identity, Vector3.one);
+        this.blockEntityRenderer = blockEntityRenderer;
+        UpdateBlockEntities(chunk);
+    }
+
+    public void UpdateBlockEntities(Chunk chunk){
+        foreach (var keypair in chunk.blockEntities)
+        {
+            Matrix4x4 mat = Matrix4x4.TRS((float3)keypair.Key + new float3(0.5f), 
+                World.VoxelRotations[(int)keypair.Value.Direction], Vector3.one);
             blockEntityRenderer.AddBlockEntity(keypair.Value.ID, mat);
         }
     }
@@ -124,25 +156,32 @@ public class ChunkRenderer {
             if(keypair.Value == null){
                 continue;
             }
+            if(keypair.Key.IsDirty){
+                UpdateBlockEntities(keypair.Key);
+                keypair.Key.ResetDirtyFlag();
+            }
             Graphics.DrawMesh(keypair.Value, (float3)keypair.Key.Coord, Quaternion.identity, Program.GlobalDatabase.VoxelMaterial, 0);
         }
     }
+
+    
 }
 
 public class BlockEntityRenderer {
     Dictionary<int, BlockEntityRenderData> renderTargets = new Dictionary<int, BlockEntityRenderData>();
+    const int matrixStride = sizeof(float) * 16;
+    const int uintStride = sizeof(uint);
+    Bounds bounds;
 
     public void AddBlockEntity(int ID, Matrix4x4 transform)
     {
         if(!renderTargets.ContainsKey(ID)){
             BlockEntityRenderData renderData = new BlockEntityRenderData();
-            renderData.count = 1;
             renderData.Voxel = Program.GlobalDatabase.GetVoxel(ID);
             renderData.Transforms.Add(transform);
             renderTargets.Add(ID, renderData);
         } else {
             BlockEntityRenderData renderData = renderTargets[ID];
-            renderData.count++;
             renderData.Transforms.Add(transform);
         }
     }
@@ -152,30 +191,75 @@ public class BlockEntityRenderer {
         if (renderTargets.ContainsKey(ID))
         {
             BlockEntityRenderData renderData = renderTargets[ID];
-            renderData.count--;
             bool worked = renderData.Transforms.Remove(transform);
             if(!worked){
                 throw new SystemException($"Bro, for {ID}, this matrix {transform} doesn't exist wtf is wrong");
             }
-            if(renderData.count == 0){
+            if(renderData.Transforms.Count == 0){
                 renderTargets.Remove(ID);
             }
         } else {
             throw new SystemException($"Bro, you can't remove an ID {ID} that doesn't exist");
         }
     }
-
+    
     public void Render(){
-        foreach(BlockEntityRenderData values in renderTargets.Values) {
-            Graphics.DrawMeshInstanced(values.Voxel.EntityMesh, 0, values.Voxel.EntityMaterial, values.Transforms);    
+        foreach(BlockEntityRenderData renderData in renderTargets.Values) {
+            int instanceCount = renderData.Transforms.Count;
+
+            renderData.Release();
+
+            renderData.argsBuffer = new ComputeBuffer(5, uintStride, ComputeBufferType.IndirectArguments);
+
+            renderData.argsData[0] = renderData.Voxel.EntityMesh.GetIndexCount(0);
+            renderData.argsData[1] = (uint)instanceCount;
+            renderData.argsData[2] = renderData.Voxel.EntityMesh.GetIndexStart(0);
+            renderData.argsData[3] = renderData.Voxel.EntityMesh.GetBaseVertex(0);
+            renderData.argsData[4] = 0;
+
+            renderData.argsBuffer.SetData(renderData.argsData);
+
+            Matrix4x4[] matrices = renderData.Transforms.ToArray();
+
+            foreach(Matrix4x4 mat in matrices){
+                Vector3 position = mat.GetPosition();
+                Vector3 forward = Quaternion.LookRotation(mat.GetColumn(2), mat.GetColumn(1)) * Vector3.forward;
+                Vector3 right = Quaternion.LookRotation(mat.GetColumn(2), mat.GetColumn(1)) * Vector3.right;
+                Vector3 left = Quaternion.LookRotation(mat.GetColumn(2), mat.GetColumn(1)) * Vector3.left;
+
+                Vector3 endPoint = position + forward * 0.3f;
+
+                Debug.DrawLine(position, endPoint);
+                Debug.DrawLine(endPoint, endPoint - forward * 0.1f + right * 0.1f);
+                Debug.DrawLine(endPoint, endPoint - forward * 0.1f + left * 0.1f);
+            }
+
+            renderData.matricesBuffer = new ComputeBuffer(instanceCount, matrixStride);
+            renderData.matricesBuffer.SetData(matrices);
+            renderData.Voxel.EntityMaterial.SetBuffer("positionBuffer", renderData.matricesBuffer);
+            bounds = new Bounds(new Vector3(Chunk.SIZE, Chunk.SIZE, Chunk.SIZE) / 2, new Vector3(Chunk.SIZE, Chunk.SIZE, Chunk.SIZE)); // need to change position
+            Graphics.DrawMeshInstancedIndirect(renderData.Voxel.EntityMesh, 0, renderData.Voxel.EntityMaterial, bounds, renderData.argsBuffer);
+        }
+    }
+ 
+    public void OnDisable(){
+        foreach (BlockEntityRenderData renderData in renderTargets.Values){
+            renderData.Release();
         }
     }
 }
 
  class BlockEntityRenderData {
-    public int count;
     public Voxel Voxel;
     public List<Matrix4x4> Transforms = new List<Matrix4x4>();
+    public ComputeBuffer argsBuffer;
+    public ComputeBuffer matricesBuffer;
+    public uint[] argsData = new uint[5];
+
+    public void Release(){
+        argsBuffer?.Release();
+        matricesBuffer?.Release();
+    }
 }
 
 public class PlayerSettings {

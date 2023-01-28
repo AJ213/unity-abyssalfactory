@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Unity.Mathematics;
 
-public class TubeConveyor : IBlockEntity, IInventory
+public class StorageSilo : IBlockEntity, IInventory
 {
     public int ID { get; set; }
     public World.Direction Direction { get; set; }
@@ -93,41 +93,4 @@ public class TubeConveyor : IBlockEntity, IInventory
     public void Render(float timeDelta){
 
     }
-}
-
-public class Item {
-    public int ID;
-    public Dictionary<string, object> data;
-
-    // Note: Does not implement any NBT data comparision and so forth yet
-    public override bool Equals(object obj)
-    {
-        return obj is Item item &&
-               ID == item.ID;
-    }
-
-    public override int GetHashCode() => ID;
-}
-
-public interface IBlockEntity {
-    public int ID { get; set; }
-    public World.Direction Direction { get; set; }
-    public bool OnCreate(int ID, int3 globalPosition, World.Direction direction);
-    public void Update(float fixedDeltaTime);
-    public void Render(float timeDelta);
-}
-
-public interface IInventory {
-    public bool Insert(int3 position, Item item);
-    public bool Remove(int3 position, Item item);
-}
-
-public struct EntityRegion {
-    public int3 Corner; // Always bottom left corner
-    public int3 Size; // Always the width/height/depth of object in full, not half
-    public EntityRegion(int3 corner, int3 size) {
-        Corner = corner;
-        Size = size;
-    }
-    public bool IsSingleSize => Size.x == 1 && Size.y == 1 && Size.z == 1;
 }

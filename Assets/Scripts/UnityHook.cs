@@ -4,9 +4,6 @@ public class UnityHook : MonoBehaviour
 {
     public FileSystemData Database;
     Program program;
-    [SerializeField] Mesh mesh;
-    [SerializeField] Material material;
-
 
     void Awake()
     {
@@ -15,6 +12,11 @@ public class UnityHook : MonoBehaviour
     
     void Update()
     {
-        program.Update(mesh, material);
+        program.Update();
+    }
+
+    private void OnDisable()
+    {
+        program.OnDisable();
     }
 }

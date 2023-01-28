@@ -221,5 +221,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Database: {fileID: 11400000, guid: 47061deb660fce844b7b145f1b7d86d5, type: 2}
-  mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
-  material: {fileID: 2100000, guid: 4870f4ae57cf9d649a4ef2cc110345ce, type: 2}

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f9656333c988514f9b8b53ae7cb02c6, type: 3}
+  m_Name: 3ConveyorTube 1
+  m_EditorClassIdentifier: 
+  id: 3
+  displayName: TubeConveyor
+  isSolid: 1
+  isDestructable: 1
+  canRenderFaces: 1
+  voxelMeshData: {fileID: 0}
+  textureFaces: []
+  isBlockEntity: 1
+  entityMesh: {fileID: -309684176625119091, guid: e4e1416ed302f3a47b0646e3cdb6dd3a, type: 3}
+  entityMaterial: {fileID: 2100000, guid: 4870f4ae57cf9d649a4ef2cc110345ce, type: 2}
+  blockEntityClassName: TubeConveyor
+  size:
+    x: 1
+    y: 1
+    z: 1

@@ -77,7 +77,7 @@ public class Database
         }
     }
     public int GetTextureID(Texture2D tex) => textureIndexes[tex];
-    public Type GetBlockEntityType(int id) => blockEntityTypes[id];
+    public IBlockEntity CreateBlockEntity(int id) => (IBlockEntity)Activator.CreateInstance(blockEntityTypes[id]);
     public Texture2DArray GetTextureArray => textureArray;
     public Voxel GetVoxel(int id) => voxels[id];
     public Material VoxelMaterial => fileSystemData.VoxelMaterial;
