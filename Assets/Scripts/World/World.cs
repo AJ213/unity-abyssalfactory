@@ -139,7 +139,8 @@ public class ChunkRenderer {
     public void UpdateBlockEntities(Chunk chunk){
         foreach (var keypair in chunk.blockEntities)
         {
-            Matrix4x4 mat = Matrix4x4.TRS((float3)keypair.Key + new float3(0.5f), 
+            float3 offset = (float3)Program.GlobalDatabase.GetVoxel(keypair.Value.ID).Size/2f;
+            Matrix4x4 mat = Matrix4x4.TRS((float3)keypair.Key + offset, 
                 World.VoxelRotations[(int)keypair.Value.Direction], Vector3.one);
             blockEntityRenderer.AddBlockEntity(keypair.Value.ID, mat);
         }

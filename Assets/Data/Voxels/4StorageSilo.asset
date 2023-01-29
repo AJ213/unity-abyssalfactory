@@ -20,7 +20,7 @@ MonoBehaviour:
   voxelMeshData: {fileID: 0}
   textureFaces: []
   isBlockEntity: 1
-  entityMesh: {fileID: -309684176625119091, guid: 98ada12a2edb26342b07afa2c00c42e5, type: 3}
+  entityMesh: {fileID: -1053996904552658979, guid: 46f0cc02083e4bb44a814f0f1a817f39, type: 3}
   entityMaterial: {fileID: 2100000, guid: 549fa57ae066fa64881da47b94bc1f7e, type: 2}
   blockEntityClassName: StorageSilo
   size:

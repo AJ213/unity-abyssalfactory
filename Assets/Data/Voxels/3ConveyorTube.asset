@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3f9656333c988514f9b8b53ae7cb02c6, type: 3}
-  m_Name: 3ConveyorTube 1
+  m_Name: 3ConveyorTube
   m_EditorClassIdentifier: 
   id: 3
   displayName: TubeConveyor
@@ -20,7 +20,7 @@ MonoBehaviour:
   voxelMeshData: {fileID: 0}
   textureFaces: []
   isBlockEntity: 1
-  entityMesh: {fileID: -309684176625119091, guid: e4e1416ed302f3a47b0646e3cdb6dd3a, type: 3}
+  entityMesh: {fileID: -309684176625119091, guid: 4e3490d653e7ac74eb3a2aba52599dd3, type: 3}
   entityMaterial: {fileID: 2100000, guid: 4870f4ae57cf9d649a4ef2cc110345ce, type: 2}
   blockEntityClassName: TubeConveyor
   size:
