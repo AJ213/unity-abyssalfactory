@@ -9,39 +9,45 @@ using UnityEngine.Assertions;
 public class FileSystemData : ScriptableObject
 {
     public HashSet<Voxel> Voxels = new HashSet<Voxel>();
+    [SerializeField] List<Voxel> visualizer = new List<Voxel>();
     [SerializeField] private string voxelDataRelativeFilePath;
     [SerializeField] public Material voxelMaterial;
-    void OnValidate()
+    public Material VoxelMaterial => voxelMaterial;
+    [ContextMenu("Update Database")]
+    public void UpdateVoxelDatabase()
     {
-        if (!Application.IsPlaying(this))
+        visualizer.Clear();
+        int size = Voxels.Count;
+        DirectoryInfo directory= new DirectoryInfo(Application.dataPath + "/" + voxelDataRelativeFilePath);
+        foreach(FileInfo file in directory.EnumerateFiles())
         {
-            int size = Voxels.Count;
-            DirectoryInfo directory= new DirectoryInfo(Application.dataPath + "/" + voxelDataRelativeFilePath);
-            foreach(FileInfo file in directory.EnumerateFiles())
-            {
-                if(file.Name.EndsWith(".meta") || !file.Name.EndsWith(".asset")){
-                    continue;
-                }
-                Voxel asset = AssetDatabase.LoadAssetAtPath<Voxel>(RelativePath(file.FullName));
-                Voxels.Add(asset);
+            if(file.Name.EndsWith(".meta") || !file.Name.EndsWith(".asset")){
+                continue;
             }
+            Voxel asset = AssetDatabase.LoadAssetAtPath<Voxel>(RelativePath(file.FullName));
+            Voxels.Add(asset);
+            visualizer.Add(asset);
+        }
 
-            if (size != Voxels.Count)
-            {
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-            }
+        if (size != Voxels.Count)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
     }
-    public Material VoxelMaterial => voxelMaterial;
+    
     public static string RelativePath(string path){
         return path.Substring(path.IndexOf("Assets"));
     }
-
+    public void InitializeVoxelsHashSet()
+    {
+        Voxels = new HashSet<Voxel>(visualizer);
+    }
     public static FileSystemData LoadDataBase()
     {
         FileSystemData asset = (FileSystemData)Resources.Load("Database");
         Assert.IsTrue(asset != null, "Failed to load Database asset");
+        asset.InitializeVoxelsHashSet();
         return asset;
     }
 }

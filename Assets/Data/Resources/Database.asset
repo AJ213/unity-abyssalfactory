@@ -12,5 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c128108b34bb514e92ef838be03430b, type: 3}
   m_Name: Database
   m_EditorClassIdentifier: 
+  visualizer:
+  - {fileID: 11400000, guid: c05ce700403da934688e8c87e0103d9e, type: 2}
+  - {fileID: 11400000, guid: e8ae6c09b5717d743825ec61c1abd275, type: 2}
+  - {fileID: 11400000, guid: 76c4e296eef96b445ad44dd9906a4587, type: 2}
+  - {fileID: 11400000, guid: f6ea358eeb6eac146949d6929965f038, type: 2}
+  - {fileID: 11400000, guid: 35668e1dfb233e643920abd0d1642160, type: 2}
   voxelDataRelativeFilePath: Data/Voxels
   voxelMaterial: {fileID: 2100000, guid: 87543dae9fcd3f64ca4ef6b32070459c, type: 2}

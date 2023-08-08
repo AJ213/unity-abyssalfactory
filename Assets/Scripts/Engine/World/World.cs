@@ -32,6 +32,16 @@ public class World
             AddChunkRendering(chunk);
         }
     }
+    public void UpdateAllEntities(float deltaTime)
+    {
+        foreach (Chunk chunk in chunks.Values)
+        {
+            foreach (IBlockEntity entity in chunk.blockEntities.Values)
+            {
+                entity.Update(deltaTime);
+            }
+        }
+    }
     
     public Chunk GetChunk(int3 globalPosition) {
         int3 coord = GetChunkCoordFromPosition(globalPosition);

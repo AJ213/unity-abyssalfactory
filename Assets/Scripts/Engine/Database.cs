@@ -21,6 +21,7 @@ public class Database
         }
 
         ////////////////////////////// Create Texture Array //
+        
         uniqueTextures = new Dictionary<int, List<Texture2D>>();
         int texCount = 0;
         HashSet<Texture2D> temp = new HashSet<Texture2D>();
@@ -45,7 +46,10 @@ public class Database
                 }
             }
         }
-
+        if (randomTex == null)
+        {
+            Debug.LogError($"random texture is null for some reason. is it because of voxel list being nothing? {fileSystemData.Voxels.Count}");
+        }
         textureArray = new
             Texture2DArray(randomTex.width,
             randomTex.height, texCount,

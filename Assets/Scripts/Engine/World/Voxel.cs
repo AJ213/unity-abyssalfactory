@@ -25,6 +25,7 @@ public class Voxel : ScriptableObject
 
         return textureFaces[(int)direction]; 
     }
+    public bool HasTexture() => textureFaces is { Length: > 0 };
     public bool IsSolid => isSolid;
     public bool IsDestructable => isDestructable;
     public bool CanRenderFaces => canRenderFaces;
@@ -47,7 +48,13 @@ public class Voxel : ScriptableObject
         return this.id.Equals(item.id);
     }
 
-    public override int GetHashCode()=> id;
+    public override int GetHashCode() => id;
     
     public override string ToString() => displayName;
+
+    public const int AIR = 0;
+    public const int STONE = 1;
+    public const int STONE2 = 2;
+    public const int CONVEYOR = 3;
+    public const int STORAGE = 4;
 }

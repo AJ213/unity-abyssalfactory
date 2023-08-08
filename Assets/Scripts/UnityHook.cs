@@ -1,3 +1,4 @@
+using System;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -8,6 +9,23 @@ public class UnityHook : MonoBehaviour
     void Awake()
     {
         program = new Program();
+        ConveyorTest();
+        Program.CurrentWorld.AddAllChunksToRendering();
+        cam = new FlyingCamera();
+    }
+
+    void ConveyorTest()
+    {
+        Program.CurrentWorld.SetBlock(new int3(-5, 0, 0), Voxel.STORAGE, World.Direction.Right);
+        Program.CurrentWorld.SetBlock(new int3(-2, 0, 0), Voxel.CONVEYOR, World.Direction.Right);
+        Program.CurrentWorld.SetBlock(new int3(-1, 0, 0), Voxel.CONVEYOR, World.Direction.Right);
+        Program.CurrentWorld.SetBlock(new int3(0, 0, 0), Voxel.CONVEYOR, World.Direction.Right);
+        Program.CurrentWorld.SetBlock(new int3(1, 0, 0), Voxel.CONVEYOR, World.Direction.Right);
+        Program.CurrentWorld.SetBlock(new int3(2, 0, 0), Voxel.STORAGE, World.Direction.Right);
+    }
+    
+    void Something()
+    {
         for (int x = 0; x < Chunk.SIZE; x++)
         {
             for (int z = 0; z < Chunk.SIZE; z++)
@@ -26,14 +44,16 @@ public class UnityHook : MonoBehaviour
         }
         
         Program.CurrentWorld.SetBlock(new int3(Count, 1, Count), 4, World.Direction.Forward);
-        Program.CurrentWorld.AddAllChunksToRendering();
-        cam = new FlyingCamera();
     }
     
     void Update()
     {
-        program.Update();
+        program.Update(Time.deltaTime);
         cam.Update();
+    }
+    void FixedUpdate()
+    {
+        program.FixedUpdate(Time.fixedDeltaTime);
     }
 
     private void OnDisable()

@@ -15,13 +15,15 @@ public class Program
         CurrentWorld = new World();
         database.VoxelMaterial.SetTexture("_MainTex", GlobalDatabase.GetTextureArray);
     }
-    
-    
 
-
-    public void Update()
+    public void Update(float deltaTime)
     {
         CurrentWorld.UpdateRendering();
+    }
+
+    public void FixedUpdate(float deltaTime)
+    {
+        CurrentWorld.UpdateAllEntities(deltaTime);
     }
 
     public void OnDisable(){
