@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using UnityEngine;
 
 public class Chunk
 {
@@ -23,9 +24,9 @@ public class Chunk
     public void ResetDirtyFlag() => isDirty = false;
     public bool IsDirty => isDirty;
 
-    public IBlockEntity GetBlockEntity(int3 globalPosition) 
+    public IBlockEntity GetBlockEntity(int3 position) 
     {
-        int3 localPosition = World.GetVoxelLocalPositionInChunk(globalPosition);
+        int3 localPosition = World.GetVoxelLocalPositionInChunk(position);
         blockEntities.TryGetValue(localPosition, out IBlockEntity blockEntity);
         return blockEntity;
     }
@@ -34,24 +35,34 @@ public class Chunk
         int3 localPosition = World.GetVoxelLocalPositionInChunk(globalPosition);
         blockEntities.Add(localPosition, blockEntity);
     }
-    public bool CreateBlockEntity(int3 globalPositionCorner, int id, World.Direction direction)
+
+    public bool SetBlock(int3 position, int id, World.Direction direction)
     {
         Voxel voxel = Program.GlobalDatabase.GetVoxel(id);
-        if (voxel == null) return false;
-        if (!voxel.IsEntity) return false; // may just allow anyways, make this create block
+        if (voxel == null)
+        {
+            Debug.LogError($"Accessing unknown block ID {id}");
+            return false;
+        }
 
+        if (!voxel.IsEntity)
+        {
+            SetID(position, id);
+            return true;
+        }
+        
         EntityRegion region = new EntityRegion
         {
             Size = voxel.Size,
-            Corner = globalPositionCorner
+            Corner = position
         };
         if (!Program.CurrentWorld.IsRegionEmpty(region)) return false;
 
         IBlockEntity blockEntity = Program.GlobalDatabase.CreateBlockEntity(id);
-        bool worked = blockEntity.OnCreate(id, globalPositionCorner, direction);
+        bool worked = blockEntity.OnCreate(id, position, direction);
         
         if (worked){
-            int3 localPosition = World.GetVoxelLocalPositionInChunk(globalPositionCorner);
+            int3 localPosition = World.GetVoxelLocalPositionInChunk(position);
             SetID(localPosition.x, localPosition.y, localPosition.z, id);
             blockEntities.Add(localPosition, blockEntity);
             isDirty = true;
@@ -59,9 +70,9 @@ public class Chunk
         return worked;
     }
 
-    public void SetID(int3 globalPosition, int id)
+    public void SetID(int3 position, int id)
     {
-        int3 localPosition = World.GetVoxelLocalPositionInChunk(globalPosition);
+        int3 localPosition = World.GetVoxelLocalPositionInChunk(position);
         SetID(localPosition.x, localPosition.y, localPosition.z, id);
     }
 
@@ -70,8 +81,8 @@ public class Chunk
         isDirty = true;
     }
     // best if used once
-    public bool IsSpaceEmpty(int3 globalPosition){
-        int3 localPosition = World.GetVoxelLocalPositionInChunk(globalPosition);
+    public bool IsSpaceEmpty(int3 position){
+        int3 localPosition = World.GetVoxelLocalPositionInChunk(position);
         Voxel voxel = GetVoxel(localPosition);
         return !voxel.IsSolid;
     }

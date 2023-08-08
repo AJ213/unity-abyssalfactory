@@ -65,7 +65,7 @@ public class TubeConveyor : IBlockEntity, IInventory
         if(currentTimer < speedPerCapacity){
             return;
         }
-
+        currentTimer = 0;
         Item front = itemsOnConveyor[capacity - 1];
 
         if (front != null){

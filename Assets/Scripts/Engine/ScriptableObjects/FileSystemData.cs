@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Assertions;
 
 [CreateAssetMenu(fileName = "New FileSystemData", menuName = "Data/FileSystemData")]
 [ExecuteAlways]
@@ -36,6 +37,11 @@ public class FileSystemData : ScriptableObject
     public static string RelativePath(string path){
         return path.Substring(path.IndexOf("Assets"));
     }
-    
 
+    public static FileSystemData LoadDataBase()
+    {
+        FileSystemData asset = (FileSystemData)Resources.Load("Database");
+        Assert.IsTrue(asset != null, "Failed to load Database asset");
+        return asset;
+    }
 }
