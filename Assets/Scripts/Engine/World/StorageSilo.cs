@@ -1,58 +1,76 @@
+using System.Collections;
+using System.Collections.Generic;
+using PlasticGui.WorkspaceWindow.Items;
 using Unity.Mathematics;
 
 public class StorageSilo : IBlockEntity, IInventory
 {
-    public int ID { get; set; }
+    public Voxel Voxel { get; set; }
+    public EntityRegion EntityRegion { get; set; }
     public World.Direction Direction { get; set; }
     
-    public int3 placePosition;
-    public Item[] items;
-    public int capacity = 100;
-    float3 startPosition;
-    float3 endPosition;
-    private int3 outputPosition;
+    private int3 placePosition;
+    private List<Item> items;
+    private int capacity = 100;
 
-    public bool OnCreate(int ID, int3 globalPosition, World.Direction direction)
+    private List<TubeConveyor> linkedExportingConveyors = new List<TubeConveyor>();
+
+    public bool OnCreate(Voxel voxel, EntityRegion region, World.Direction direction)
     {
-        this.ID = ID;
-        this.placePosition = globalPosition;
+        this.Voxel = voxel;
+        this.EntityRegion = region;
+        this.placePosition = region.Corner;
         this.Direction = direction;
 
-        float3 dir = (float3)World.GetDirectionVector(direction);
-        startPosition = globalPosition + new float3(0.5f) - dir / 2f;
-        endPosition = startPosition + dir;
-        outputPosition = placePosition + (int3)dir;
-        items = new Item[capacity];
+        items = new List<Item>(capacity);
 
         return true;
     }
 
     public bool Insert(int3 position, Item item){
-        if(!placePosition.Equals(position)){
+        if (items.Count >= capacity)
+        {
             return false;
         }
-
+        items.Add(item);
+        UpdateLinkedConveyorStatus(); // really want to do on owned chunk update
         // No inserting yet
         return true;
     }
 
     // This is only used for removing specific items
     public bool Remove(int3 position, Item item){
-        if (!placePosition.Equals(position))
+        return items.Remove(item);
+    }
+    public IEnumerable<Item> GetItems() => items;
+    public bool Contains(Item item) => items.Contains(item);
+
+    public void UpdateLinkedConveyorStatus()
+    {
+        linkedExportingConveyors.Clear();
+        foreach ((int3, int3) posDir in EntityRegion.NearbyRegionPositions())
         {
-            return false;
+            TubeConveyor conveyor = Program.CurWorld.GetBlockEntity<TubeConveyor>(posDir.Item1);
+            if (conveyor == null) continue;
+            if (conveyor.VecDirection.Dot(posDir.Item2) < 0) continue;
+            
+            linkedExportingConveyors.Add(conveyor);
         }
-        for (int i = 0; i < capacity; i++){
-            if(items[i] == item){
-                items[i] = null;
-                return true;
-            }    
-        }
-        return false;
     }
 
     public void Update(float fixedDeltaTime)
     {
+        UpdateLinkedConveyorStatus();
+        if (items.Count <= 0) return;
+        foreach (TubeConveyor conveyor in linkedExportingConveyors)
+        {
+            if (items.Count <= 0) break;
+            Item item = items[^1];
+            if (conveyor.Insert(conveyor.EntityRegion.Corner,item))
+            {
+                items.Remove(item);
+            }
+        }
         //currentTimer += fixedDeltaTime;
         //if(currentTimer < speedPerCapacity){
         //    return;
@@ -83,6 +101,6 @@ public class StorageSilo : IBlockEntity, IInventory
         //}
     }
     public void Render(float timeDelta){
-
+        
     }
 }

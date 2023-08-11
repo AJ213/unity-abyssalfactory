@@ -56,14 +56,24 @@ public class Chunk
             Size = voxel.Size,
             Corner = position
         };
-        if (!Program.CurrentWorld.IsRegionEmpty(region)) return false;
+        if (!Program.CurWorld.IsRegionEmpty(region)) return false;
 
         IBlockEntity blockEntity = Program.GlobalDatabase.CreateBlockEntity(id);
-        bool worked = blockEntity.OnCreate(id, position, direction);
-        
-        if (worked){
+        bool worked = blockEntity.OnCreate(voxel, region, direction);
+
+        if (worked)
+        {
             int3 localPosition = World.GetVoxelLocalPositionInChunk(position);
-            SetID(localPosition.x, localPosition.y, localPosition.z, id);
+            for (int x = 0; x < region.Size.x; x++)
+            {
+                for (int y = 0; y < region.Size.y; y++)
+                {
+                    for (int z = 0; z < region.Size.z; z++)
+                    {
+                        SetID(localPosition.x + x, localPosition.y + y, localPosition.z + z, id);
+                    }
+                }
+            }
             blockEntities.Add(localPosition, blockEntity);
             isDirty = true;
         }

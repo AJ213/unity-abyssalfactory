@@ -47,7 +47,7 @@ public class Voxel : ScriptableObject
 
         return this.id.Equals(item.id);
     }
-
+    public EntityRegion CreateEntityRegion(int3 position) => new EntityRegion(position, size);
     public override int GetHashCode() => id;
     
     public override string ToString() => displayName;

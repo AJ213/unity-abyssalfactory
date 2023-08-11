@@ -43,17 +43,28 @@ public class World
         }
     }
     
-    public Chunk GetChunk(int3 globalPosition) {
-        int3 coord = GetChunkCoordFromPosition(globalPosition);
+    public Chunk GetChunk(int3 position) {
+        int3 coord = GetChunkCoordFromPosition(position);
         chunks.TryGetValue(coord, out Chunk chunk);
         return chunk;
     }
-    public IBlockEntity GetBlockEntity(int3 globalPosition) {
-        Chunk chunk = GetChunk(globalPosition);
+    public IBlockEntity GetBlockEntity(int3 position) {
+        Chunk chunk = GetChunk(position);
         if(chunk == null){ // meaning chunk hasn't been generated
             return null;
         }
-        return chunk.GetBlockEntity(globalPosition);
+        return chunk.GetBlockEntity(position);
+    }
+    public T GetBlockEntity<T>(int3 position) where T : IBlockEntity
+    {
+        IBlockEntity entity = GetBlockEntity(position);
+        if (entity == null) return default;
+
+        if (entity is T myEntity)
+        {
+            return myEntity;
+        }
+        return default;
     }
 
     // This needs to check many chunks for this lol, not just one
@@ -99,14 +110,23 @@ public class World
         Right,
         Left
     }
+    
+    public static readonly int3 Forward = new int3(0, 0, 1);
+    public static readonly int3 Backward = new int3(0, 0, -1);
+    public static readonly int3 Up = new int3(0, 1, 0);
+    public static readonly int3 Down = new int3(0, -1, 0);
+    public static readonly int3 Right = new int3(1, 0, 0);
+    public static readonly int3 Left = new int3(-1, 0, 0);
+    
     public static readonly int3[] VoxelDirections = new int3[] {
-        new int3(0,0,1),    // forward
-        new int3(0,0,-1),   // backward
-        new int3(0,1,0),    // up
-        new int3(0,-1,0),   // down
-        new int3(1,0,0),    // right
-        new int3(-1,0,0),   // left
+        Forward,    // forward
+        Backward,   // backward
+        Up,         // up
+        Down,       // down
+        Right,      // right
+        Left,       // left
     };
+
     public static readonly Quaternion[] VoxelRotations = new Quaternion[] {
         Quaternion.LookRotation(Vector3.forward, Vector3.up),
         Quaternion.LookRotation(Vector3.back, Vector3.up),

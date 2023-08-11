@@ -1,35 +1,45 @@
 using System.Collections.Generic;
 using Unity.Mathematics;
+using System.Linq;
+using UnityEngine;
 
 public class TubeConveyor : IBlockEntity, IInventory
 {
-    public int ID { get; set; }
+    public Voxel Voxel { get; set; }
+    public EntityRegion EntityRegion { get; set; }
     public World.Direction Direction { get; set; }
-    
-    public int3 placePosition;
-    public Item[] itemsOnConveyor;
-    public int capacity = 5;
-    public float speed = 1;
-    private float speedPerCapacity;
-    float3 startPosition;
-    float3 endPosition;
-    float currentTimer = 0;
+    public int3 VecDirection { get; private set; }
+
+    public float Speed => speedPerCapacity;
+    public int Capacity => capacity;
+    private int3 placePosition;
+    private Item[] itemsOnConveyor;
+    int itemCount = 0;
+    private int capacity = 5;
+    private float speed = 5;
+    private int speedPerCapacity;
+    private float3 startPosition;
+    private float3 endPosition;
+    private int currentTicks = 0;
     private int3 outputPosition;
 
-    public bool OnCreate(int ID, int3 globalPosition, World.Direction direction)
+    public bool OnCreate(Voxel voxel, EntityRegion region, World.Direction direction)
     {
-        this.ID = ID;
-        this.placePosition = globalPosition;
+        this.Voxel = voxel;
+        this.placePosition = region.Corner;
+        EntityRegion = region;
         this.Direction = direction;
 
-        float3 dir = (float3)World.GetDirectionVector(direction);
-        startPosition = globalPosition + new float3(0.5f) - dir / 2f;
+        VecDirection = World.GetDirectionVector(direction);
+        float3 dir = VecDirection;
+        startPosition = region.Corner + new float3(0.5f) - dir / 2f;
         endPosition = startPosition + dir;
-        outputPosition = placePosition + (int3)dir;
+        outputPosition = placePosition + VecDirection;
         itemsOnConveyor = new Item[capacity];
 
-        speedPerCapacity = speed / capacity;
-        currentTimer = 0;
+        speedPerCapacity = (int)((speed / capacity)/Time.fixedDeltaTime);
+        
+        currentTicks = 0;
         return true;
     }
 
@@ -41,6 +51,7 @@ public class TubeConveyor : IBlockEntity, IInventory
             return false;
         }
         itemsOnConveyor[0] = item;
+        itemCount++;
         return true;
     }
 
@@ -51,29 +62,38 @@ public class TubeConveyor : IBlockEntity, IInventory
             return false;
         }
         for (int i = 0; i < capacity; i++){
-            if(itemsOnConveyor[i] == item){
+            if(itemsOnConveyor[i].Equals(item)){
                 itemsOnConveyor[i] = null;
+                itemCount--;
                 return true;
             }    
         }
         return false;
     }
-
+    public IEnumerable<Item> GetItems() => itemsOnConveyor;
+    public bool Contains(Item item) => itemsOnConveyor.Contains(item);
+    
     public void Update(float fixedDeltaTime)
     {
-        currentTimer += fixedDeltaTime;
-        if(currentTimer < speedPerCapacity){
+        if (itemCount == 0)
+        {
+            currentTicks = 0;
             return;
         }
-        currentTimer = 0;
+        
+        currentTicks += 1;
+        if(currentTicks < speedPerCapacity){
+            return;
+        }
+        currentTicks = 0;
         Item front = itemsOnConveyor[capacity - 1];
 
         if (front != null){
-            IBlockEntity e = Program.CurrentWorld.GetBlockEntity(outputPosition);
-            if(e != null && e is TubeConveyor){
-                TubeConveyor outputConveyor = (TubeConveyor)e;
-                if(outputConveyor.Insert(outputPosition, front)){
+            IBlockEntity e = Program.CurWorld.GetBlockEntity(outputPosition);
+            if(e is IInventory inventory){
+                if(inventory.Insert(outputPosition, front)){
                     itemsOnConveyor[capacity - 1] = null;
+                    itemCount--;
                 }
             }
         }
@@ -93,41 +113,4 @@ public class TubeConveyor : IBlockEntity, IInventory
     public void Render(float timeDelta){
 
     }
-}
-
-public class Item {
-    public int ID;
-    public Dictionary<string, object> data;
-
-    // Note: Does not implement any NBT data comparision and so forth yet
-    public override bool Equals(object obj)
-    {
-        return obj is Item item &&
-               ID == item.ID;
-    }
-
-    public override int GetHashCode() => ID;
-}
-
-public interface IBlockEntity {
-    public int ID { get; set; }
-    public World.Direction Direction { get; set; }
-    public bool OnCreate(int ID, int3 globalPosition, World.Direction direction);
-    public void Update(float fixedDeltaTime);
-    public void Render(float timeDelta);
-}
-
-public interface IInventory {
-    public bool Insert(int3 position, Item item);
-    public bool Remove(int3 position, Item item);
-}
-
-public struct EntityRegion {
-    public int3 Corner; // Always bottom left corner
-    public int3 Size; // Always the width/height/depth of object in full, not half
-    public EntityRegion(int3 corner, int3 size) {
-        Corner = corner;
-        Size = size;
-    }
-    public bool IsSingleSize => Size.x == 1 && Size.y == 1 && Size.z == 1;
 }

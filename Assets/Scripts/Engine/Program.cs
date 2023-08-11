@@ -5,28 +5,28 @@ using UnityEngine;
 public class Program
 {
     public static Database GlobalDatabase;
-    public static World CurrentWorld;
+    public static World CurWorld;
     public static PlayerSettings PlayerSettings;
     
     public Program()
     {
         FileSystemData database = FileSystemData.LoadDataBase();
         GlobalDatabase = new Database(database);
-        CurrentWorld = new World();
+        CurWorld = new World();
         database.VoxelMaterial.SetTexture("_MainTex", GlobalDatabase.GetTextureArray);
     }
 
     public void Update(float deltaTime)
     {
-        CurrentWorld.UpdateRendering();
+        CurWorld.UpdateRendering();
     }
 
     public void FixedUpdate(float deltaTime)
     {
-        CurrentWorld.UpdateAllEntities(deltaTime);
+        CurWorld.UpdateAllEntities(deltaTime);
     }
 
     public void OnDisable(){
-        CurrentWorld.OnDisable();
+        CurWorld.OnDisable();
     }
 }
